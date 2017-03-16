@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Builder</title>
+    <script src="{% static 'js/react.js' %}"></script>
+    <script src="{% static 'js/react-dom.js' %}"></script>
+    <script src="{% static 'js/browser.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <link href="{% static 'css/builder.css' %}" rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <div id="crossword_builder"></div>
+
+    <script type="text/babel" src="{% static 'js/builder.js' %}"></script>
+</body>
+</html>
