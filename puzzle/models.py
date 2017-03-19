@@ -20,6 +20,14 @@ class Clue(models.Model):
     answer = models.CharField(max_length=25)
 
 
+class Word(models.Model):
+    word = models.CharField(max_length=25)
+    help_text = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.word
+
+
 def manual_puzzle_add():
     title = raw_input('Name of puzzle: ')
     size = input('Puzzle size: ')

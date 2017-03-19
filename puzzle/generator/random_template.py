@@ -11,10 +11,10 @@ def template_match(template, lengths, max_length):
     while 0 in temp_lengths:
         temp_lengths.remove(0)
     for l in lengths:
-        if l not in temp_lengths:
+        if int(l) not in temp_lengths:
             return False
-        temp_lengths.remove(l)
-    if max(temp_lengths) > max_length:
+        temp_lengths.remove(int(l))
+    if max(temp_lengths) > int(max_length):
         return False
     return True
 
@@ -36,7 +36,7 @@ def get_template(size, lengths, max_length):
 
 
 def main():
-    template = get_template(15, [15,15], 8)
+    template = get_template(15, [15, 15], 8)
     size = 15
     lines_across = [template[i*size:(i+1)*size] for i in range(size)]
     for l in lines_across:

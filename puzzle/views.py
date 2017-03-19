@@ -37,10 +37,17 @@ def builder(request):
     return render(request, 'puzzle/builder.html', {'initial_template': get_template(15, [], 8)})
 
 
-def send(request):
-    response = json.dumps(quickSolve(None, None, None))
-    return HttpResponse(response, content_type="application/json")
-
-
 def random_template(request):
-    return HttpResponse(get_template(request.GET['size'], [int(i) for i in request.GET['word_lengths'].split(',')], request.GET['max_length']))
+    return HttpResponse(get_template(request.GET['size'], request.GET['word_lengths'].split(','), request.GET['max_length']))
+
+
+def fill_out_grid(request):
+    template = request.GET['template']
+    exclude_words = request.GET['exclude_words']
+    return HttpResponse(json.dumps(quickSolve(template, exclude_words.split('\n'))), content_type="application/json")
+
+
+def publish(request):
+    print request.GET['template']
+    print json.loads(request.GET['clues'])
+    return HttpResponse('')

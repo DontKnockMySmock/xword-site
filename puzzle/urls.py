@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from . import views
+from . import word_info
 
 app_name = 'puzzle'
 
@@ -8,10 +9,14 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     # /puzzle/builder/
     url(r'^builder/$', views.builder, name='builder'),
-    # /puzzle/builder/send/
-    url(r'^builder/send/$', views.send, name='send'),
     # /puzzle/builder/random_template/
     url(r'^builder/random_template/$', views.random_template, name='random_template'),
+    # /puzzle/builder/fill_out_grid/
+    url(r'^builder/fill_out_grid/$', views.fill_out_grid, name='fill_out_grid'),
+    # /puzzle/builder/publish/
+    url(r'^builder/publish/$', views.publish, name='publish'),
+    # /puzzle/builder/word_info/
+    url(r'^builder/word_info/$', word_info.get_word_info, name='get_html'),
     # /puzzle/<puzzle_id>/
     url(r'^(?P<puzzle_id>[0-9]+)/$', views.play, name='play'),
     # /puzzle/<puzzle_id>/puzzle.js

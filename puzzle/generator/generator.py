@@ -368,13 +368,8 @@ class Grid:
     includeWords.append(word)
     return (False,)
 
-def quickSolve(size, includeList, excludeList):
-  module_dir = os.path.dirname(__file__)  # get current directory
-  f = open(os.path.join(module_dir,'templates/15x15'), 'r')
-  l = f.read().split('\n')
-  while '' in l: l.remove('')
-  temp = random.choice(l)
-  n = Grid(temp)
+def quickSolve(temp, excludeList):
+  n = Grid(temp, excludeList)
   n.solve(True)
   retData = {}
   retData['solution'] = ''.join(n.toReturn())
