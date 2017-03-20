@@ -51,6 +51,7 @@ class CrosswordBuilder extends React.Component {
                                 selWord={this.state.currentSelectedWord+this.state.highlightedWord}
                                 defValue={this.getCurrentClue()}
                                 onChange={(key, newClue) => this.setClue(key, newClue)}
+                                nextClue={() => this.nextClue()}
                             />
                         </td>
                     </tr>
@@ -60,8 +61,16 @@ class CrosswordBuilder extends React.Component {
             </div>
         )
     }
+    nextClue() {
+        var words = this.getCurrentWords();
+        for(var i=0;i<words.length;i++) {
+            if (words[i].word == this.state.currentSelectedWord && words[i].cells == this.state.highlightedWord) {break;}
+        }
+        if(i+1==words.length) {i=-1}
+        var nextWord = words[i+1]
+        this.highlightWord(nextWord.word, nextWord.cells)
+    }
     toggleBlackCells(e, cells) {
-        console.log(cells);
         e.preventDefault();
         var cellArr = cells.split('-');
         var newTemp = this.state.template;
@@ -78,10 +87,13 @@ class CrosswordBuilder extends React.Component {
         $.ajax({
             url: 'publish',
             data: {
+                title: this.state.title,
                 template: this.state.template,
                 clues: JSON.stringify(this.state.clues)
             },
-            success(result) {}
+            success(result) {
+                window.location.href = window.location.href.replace('builder/',result)
+            }
         })
     }
     getCurrentClue() {
@@ -183,8 +195,15 @@ class Clues extends React.Component {
                 }}
                 onChange={(event) => this.props.onChange(this.props.selWord, event.target.value)}
                 value = {this.props.defValue==null ? '' : this.props.defValue}
+                onKeyPress={(event) => this.onKeyPress(event)}
             />
         )
+    }
+    onKeyPress(event) {
+        if (event.key == 'Enter') {
+            event.preventDefault();
+            this.props.nextClue();
+        }
     }
 }
 
@@ -302,8 +321,11 @@ class Cell extends React.Component {
         )
     }
     background() {
+        if(this.props.toHover.indexOf(''+this.props.x+','+this.props.y) != -1) {
+            if(this.props.val == ' ') {return '#595959'}
+            return '#a6a6a6'
+        }
         if(this.props.val == ' ') {return 'black'}
-        if(this.props.toHover.indexOf(''+this.props.x+','+this.props.y) != -1) {return 'grey'}
         if(this.props.highlighted.indexOf(''+this.props.x+','+this.props.y) != -1) {return 'green'}
         return 'white'
     }

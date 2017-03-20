@@ -373,7 +373,6 @@ def quickSolve(temp, excludeList):
   n.solve(True)
   retData = {}
   retData['solution'] = ''.join(n.toReturn())
-  retData['words'] = n.getWordList()
   return retData
 
 if __name__ == '__main__':

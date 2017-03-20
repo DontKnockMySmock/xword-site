@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import render
-from .models import Puzzle, Clue
+from .models import Puzzle, Clue, publish_puzzle
 from django.http import HttpResponse, StreamingHttpResponse
 from make_pdf import make_pdf
 import json
@@ -48,6 +48,9 @@ def fill_out_grid(request):
 
 
 def publish(request):
-    print request.GET['template']
-    print json.loads(request.GET['clues'])
-    return HttpResponse('')
+    template = request.GET['template']
+    clues = json.loads(request.GET['clues'])
+    title = request.GET['title']
+    id = publish_puzzle(title, template, clues)
+    print 'PUZZLE ID: '+str(id)
+    return HttpResponse(id)

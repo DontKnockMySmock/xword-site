@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
 from django.db import models
+import math
 
 
 class Puzzle(models.Model):
@@ -66,6 +66,39 @@ def manual_puzzle_add():
         clue.save()
 
 
+def id_clue(clues, i_all):
+    cell1 = str(i_all[1])+','+str(i_all[2])
+    if i_all[0][-1] == 'D':
+        cell2 = str(i_all[1]+1)+','+str(i_all[2])
+    else:
+        cell2 = str(i_all[1])+','+str(i_all[2]+1)
+    to_find = cell1+'-'+cell2
+    for c in clues.keys():
+        if to_find in c:
+            return c
+    return None
+
+
+def publish_puzzle(title, template, clues):
+    size = int(math.sqrt(len(template)))
+    puzzle_array = [template[i*size:(i+1)*size] for i in range(size)]
+    puzzle = Puzzle(title=title, size=size, puzzle_text=template)
+    puzzle.save()
+    start_locations = get_start_locations(puzzle_array)
+    for iAll in start_locations:
+        i = iAll[0]
+        clue_text = clues[id_clue(clues, iAll)]
+        clue = Clue(clue_text=clue_text,
+                    puzzle=puzzle,
+                    start_num=int(i[:-1]),
+                    direction=iAll[0][-1],
+                    start_x=iAll[1],
+                    start_y=iAll[2],
+                    answer=iAll[3])
+        clue.save()
+    return puzzle.id
+
+
 def get_start_locations(template):
     start_cells_notation = []
     cell = 1
@@ -78,16 +111,16 @@ def get_start_locations(template):
                 cell += 1
             c = False
             if i == 0:
-                start_cells_notation.append([str(cell)+'D', i, j, getDownCells(template, (i,j))])
+                start_cells_notation.append([str(cell)+'D', i, j, getDownCells(template, (i, j))])
                 c = True
             elif template[i-1][j] == ' ':
-                start_cells_notation.append([str(cell)+'D', i, j, getDownCells(template, (i,j))])
+                start_cells_notation.append([str(cell)+'D', i, j, getDownCells(template, (i, j))])
                 c = True
             if j == 0:
-                start_cells_notation.append([str(cell)+'A', i, j, getAcrossCells(template, (i,j))])
+                start_cells_notation.append([str(cell)+'A', i, j, getAcrossCells(template, (i, j))])
                 c = True
             elif template[i][j-1] == ' ':
-                start_cells_notation.append([str(cell)+'A', i, j, getAcrossCells(template, (i,j))])
+                start_cells_notation.append([str(cell)+'A', i, j, getAcrossCells(template, (i, j))])
                 c = True
     start_cells_notation.sort(key=lambda x: int(x[0][:-1]))
     return start_cells_notation
