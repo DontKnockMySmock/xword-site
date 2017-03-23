@@ -8,7 +8,7 @@ class CrosswordBuilder extends React.Component {
             notes: '',
             exclude_words: '',
             template_info: {
-                size: 15,
+                size: 5,
                 word_lengths: '',
                 max_length: 10
             },
@@ -68,7 +68,8 @@ class CrosswordBuilder extends React.Component {
         }
         if(i+1==words.length) {i=-1}
         var nextWord = words[i+1]
-        this.highlightWord(nextWord.word, nextWord.cells)
+        $('#word_list').val(nextWord.cells).change();
+        this.setState({currentSelectedWord: nextWord.word, highlightedWord: nextWord.cells})
     }
     toggleBlackCells(e, cells) {
         e.preventDefault();
@@ -219,7 +220,7 @@ class WordInfo extends React.Component {
 class CurrentWords extends React.Component {
     render() {
         return (
-            <select
+            <select id='word_list'
                 size='100'
                 style={{height:grid_width}}
                 onChange={(event) => this.props.onChange(event.target.options[event.target.selectedIndex].text, event.target.value)}
