@@ -1,5 +1,5 @@
 try:
-    from django.http import StreamingHttpResponse
+    from django.http import StreamingHttpResponse, HttpResponse
     from .models import Word
 except:
     pass
@@ -42,6 +42,7 @@ def get_html(word):
         yield word
     else:
         word_objects = Word.objects.filter(word=word)
+        yield '<div style="background-color:white;width:100%">'
         if len(word_objects) > 0:
             yield word_objects[0].help_text
         else:
@@ -57,11 +58,20 @@ def get_html(word):
                 html += x
             word_object = Word(word=word, help_text=html)
             word_object.save()
+        yield '</div>'
 
 
 def get_word_info(request):
     word = request.GET['word']
     return StreamingHttpResponse(get_html(word))
+
+
+def get_word_info_no_stream(request):
+    word = request.GET['word']
+    info = ''
+    for i in get_html(word):
+        info += i
+    return HttpResponse(info)
 
 
 def get_word_info_from_word(word):

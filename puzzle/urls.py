@@ -12,7 +12,9 @@ urlpatterns = [
     # /puzzle/builder/random_template/
     url(r'^builder/random_template/$', views.random_template, name='random_template'),
     # /puzzle/builder/fill_out_grid/
-    url(r'^builder/fill_out_grid/$', views.fill_out_grid, name='fill_out_grid'),
+    url(r'^builder/fill_out_grid/$', views.fill_out_grid_stream, name='fill_out_grid'),
+    # /puzzle/builder/stream_test/
+    url(r'^builder/fill_out_grid/$', views.stream_test, name='stream_test'),
     # /puzzle/builder/publish/
     url(r'^builder/publish/$', views.publish, name='publish'),
     # /puzzle/builder/word_info/

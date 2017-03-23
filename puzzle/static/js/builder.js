@@ -143,14 +143,13 @@ class CrosswordBuilder extends React.Component {
         return allWords;
     }
     getGridSolution(self) {
-        $.ajax({
-            url: 'fill_out_grid',
-            data: {template: self.state.template, exclude_words: self.state.exclude_words},
-            type: 'GET',
-            success: function(result) {
-                self.fillInGrid(result.solution);
-            }
-        })
+        var client = new XMLHttpRequest();
+        var len = self.state.template_info.size*self.state.template_info.size;
+        client.onprogress = function(){
+            self.fillInGrid(this.responseText.substring(this.responseText.length-len, this.responseText.length));
+        }
+        client.open('get', 'fill_out_grid?template='+self.state.template+'&exclude_words='+self.state.exclude_words);
+        client.send();
     }
     fillInGrid(template) {this.setState({template: template});}
     eventChangeHandler(event) {

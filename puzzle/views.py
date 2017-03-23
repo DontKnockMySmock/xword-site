@@ -42,9 +42,25 @@ def random_template(request):
 
 
 def fill_out_grid(request):
-    template = request.GET['template']
-    exclude_words = request.GET['exclude_words']
+    print request.GET
+    try:
+        template = request.GET['template']
+        exclude_words = request.GET['exclude_words']
+    except:
+        template = '**** ****  ******** ***** ******** ***** ************************  *****   ***************   *****    ********** **********    *****   ***************   *****  ************************ ***** ******** ***** ********  **** ****'
+        exclude_words = []
     return HttpResponse(json.dumps(quickSolve(template, exclude_words.split('\n'))), content_type="application/json")
+
+
+def fill_out_grid_stream(request):
+    print request.GET
+    try:
+        template = request.GET['template']
+        exclude_words = request.GET['exclude_words']
+    except:
+        template = '**** ****  ******** ***** ******** ***** ************************  *****   ***************   *****    ********** **********    *****   ***************   *****  ************************ ***** ******** ***** ********  **** ****'
+        exclude_words = ''
+    return StreamingHttpResponse(quickSolve(template, exclude_words.split('\n')))
 
 
 def publish(request):
@@ -54,3 +70,7 @@ def publish(request):
     id = publish_puzzle(title, template, clues)
     print 'PUZZLE ID: '+str(id)
     return HttpResponse(id)
+
+
+def stream_test(request):
+    return StreamingHttpRequest

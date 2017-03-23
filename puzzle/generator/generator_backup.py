@@ -319,40 +319,35 @@ class Grid:
       wd = self.down[i][0]
       toRet.append(wd)
     return sorted(toRet)
-
+  
   @timing
   def solve(self, printout=False):
-    print self
-    yield (self.toReturn(),False)
+    if printout: print self
     if self.isSolved():
-      yield (self.toReturn(), True,)
-    else:
-      cell, region = self.regionedCell()
-      l = list(self.cells[cell])
-      random.shuffle(l)
-      letters = ''.join(l)
-      cont = True
-      for letter in letters:
-        removed = self.decide(cell, letter)
-        if removed.isDeadEnd:
-          self.restore(removed)
-          continue
-        for soln in self.solve(printout):
-          if soln[1]:
-            yield (soln[0], True)
-            cont = False
-            break
-          else:
-            yield (soln[0], False)
-        if cont:
-          self.restore(removed)
-      if cont:
-        yield (self.toReturn(), False, cell, region)
+      return (True,)
+    cell, region = self.regionedCell()
+    l = list(self.cells[cell])
+    random.shuffle(l)
+    letters = ''.join(l)
+    for letter in letters:
+      removed = self.decide(cell, letter)
+      if removed.isDeadEnd:
+        self.restore(removed)
+        continue
+      soln = self.solve(printout)
+      if soln[0]:
+        return (True,)
+      self.restore(removed)
+      #if soln[1] not in region:#removed.updatedCells():
+      #  return (False, soln[1], soln[2])
+    return (False, cell, region)
 
 def quickSolve(temp, excludeList):
   n = Grid(temp, excludeList)
-  for soln in n.solve(True):
-    yield soln[0]
+  n.solve(True)
+  retData = {}
+  retData['solution'] = ''.join(n.toReturn())
+  return retData
 
 if __name__ == '__main__':
   f = open('/templates/15x15', 'r')
