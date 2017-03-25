@@ -8,7 +8,7 @@ class CrosswordBuilder extends React.Component {
             notes: '',
             exclude_words: '',
             template_info: {
-                size: 5,
+                size: 15,
                 word_lengths: '',
                 max_length: 10
             },
@@ -18,12 +18,17 @@ class CrosswordBuilder extends React.Component {
             highlightedWord: '',
             currentSelectedWord: '',
             clues: {},
+            completing: false,
+            selected_cell: '',
         };
         this.randomTemplate();
     }
     render() {
         return (
-            <div>
+            <div
+                tabIndex="1"
+                onKeyPress={(e) => console.log(e.which)}
+            >
                 <Title onChange={(val) => this.setState({title:val})} title_val={this.state.title}/>
                 <Notes onChange={(val) => this.setState({notes:val})} notes_val={this.state.notes}/>
                 <ExcludeWords onChange={(val) => this.setState({exclude_words:val})} exclude_words={this.state.exclude_words}/>
@@ -38,6 +43,8 @@ class CrosswordBuilder extends React.Component {
                             <Grid
                                 highlightedWord={this.state.highlightedWord} template={this.state.template}
                                 toggleBlackCells={(e, cells) => this.toggleBlackCells(e, cells)}
+                                selected_cell={this.state.selected_cell}
+                                onCellClick={(x,y) => this.setState({selected_cell: ''+x+','+y})}
                             />
                         </td>
                         <td>
@@ -56,10 +63,22 @@ class CrosswordBuilder extends React.Component {
                         </td>
                     </tr>
                 </table>
-                <CmdButton onClick={() => this.state.cmd_action(this)} text={this.state.cmd_text} />
-                <PublishButton onClick={() => this.publish()} />
+                <ActionButton onClick={() => this.state.cmd_action(this)} text={this.state.cmd_text} />
+                <ActionButton text='Publish' onClick={() => this.publish()} />
+                <ActionButton text='Kill process' onClick={() => this.setState({completing: false})} />
             </div>
         )
+    }
+    getGridSolution(self) {
+        self.setState({completing: true})
+        var client = new XMLHttpRequest();
+        var len = self.state.template_info.size*self.state.template_info.size;
+        client.onprogress = function(){
+            self.fillInGrid(this.responseText.substring(this.responseText.length-len, this.responseText.length));
+            if (!self.state.completing) client.abort()
+        }
+        client.open('get', 'fill_out_grid?template='+self.state.template+'&exclude_words='+self.state.exclude_words);
+        client.send();
     }
     nextClue() {
         var words = this.getCurrentWords();
@@ -113,6 +132,7 @@ class CrosswordBuilder extends React.Component {
     }
     getCurrentWords() {
         var allWords = [];
+        var remHighlight = true;
         //across
         for (var i=0;i<this.state.template_info.size;i++) {
             var line = this.state.template.substring(i*this.state.template_info.size, (i+1)*this.state.template_info.size);
@@ -122,6 +142,9 @@ class CrosswordBuilder extends React.Component {
                     var cells = [];
                     for (var j=0;j<words[w].length;j++) {cells.push(''+i+','+(line.indexOf(words[w])+j))}
                     allWords.push({word: words[w], cells: cells.join('-')})
+                    if (this.state.currentSelectedWord == words[w] && this.state.highlightedWord == cells.join('-')) {
+                        remHighlight=false;
+                    }
                 }
             }
         }
@@ -137,20 +160,15 @@ class CrosswordBuilder extends React.Component {
                     var cells = [];
                     for (var j=0;j<words[w].length;j++) {cells.push(''+(line.indexOf(words[w])+j)+','+i)}
                     allWords.push({word: words[w], cells: cells.join('-')})
+                    if (this.state.currentSelectedWord == words[w] && this.state.highlightedWord == cells.join('-')) {
+                        remHighlight=false;
+                    }
                 }
             }
         }
+        if (remHighlight && this.state.currentSelectedWord!='' && this.state.highlightedWord!='') {this.highlightWord('','')}
         allWords.sort(function(a,b){return (a.word>b.word ? 1 : -1)});
         return allWords;
-    }
-    getGridSolution(self) {
-        var client = new XMLHttpRequest();
-        var len = self.state.template_info.size*self.state.template_info.size;
-        client.onprogress = function(){
-            self.fillInGrid(this.responseText.substring(this.responseText.length-len, this.responseText.length));
-        }
-        client.open('get', 'fill_out_grid?template='+self.state.template+'&exclude_words='+self.state.exclude_words);
-        client.send();
     }
     fillInGrid(template) {this.setState({template: template});}
     eventChangeHandler(event) {
@@ -175,11 +193,11 @@ class CrosswordBuilder extends React.Component {
     }
 }
 
-class PublishButton extends React.Component {
+class ActionButton extends React.Component {
     render() {
         return (
             <button onClick={() => this.props.onClick()}>
-                Publish
+                {this.props.text}
             </button>
         )
     }
@@ -233,16 +251,6 @@ class CurrentWords extends React.Component {
     }
 }
 
-class CmdButton extends React.Component {
-    render() {
-        return (
-            <button onClick={() => this.props.onClick()}>
-                {this.props.text}
-            </button>
-        )
-    }
-}
-
 class Grid extends React.Component {
     constructor() {
         super();
@@ -263,11 +271,13 @@ class Grid extends React.Component {
                         key={''+i+','+j}
                         x={i} y={j}
                         val={this.props.template[i*size+j]}
-                        highlighted = {highlightedCells}
+                        highlighted = {highlightedCells.indexOf(''+i+','+j)>-1}
+                        selected = {this.props.selected_cell}
                         onhover = {(x,y) => this.setHover(x,y)}
                         onMouseOut = {() => this.setState({hover: ''})}
                         toHover = {this.state.hover.split('-')}
                         onrightclick = {(e, x, y) => this.props.toggleBlackCells(e, this.state.hover)}
+                        onCellClick = {(x,y) => this.props.onCellClick(x,y)}
                     />
                 )
             };
@@ -298,6 +308,19 @@ class Grid extends React.Component {
 }
 
 class Cell extends React.Component {
+    shouldComponentUpdate(nextProps) {
+        if(''+this.props.x+','+this.props.y == this.props.selected ||
+           ''+this.props.x+','+this.props.y == nextProps.selected) {
+            return true
+        }
+        if(this.props.highlighted || nextProps.highlighted) {return true}
+        if(this.props.toHover.indexOf(''+this.props.x+','+this.props.y)!=-1 ||
+            nextProps.toHover.indexOf(''+this.props.x+','+this.props.y)!=-1) {
+                return true
+        }
+        if(this.props.val != nextProps.val) {return true}
+        return false;
+    }
     render() {
         var cell_size = grid_width / this.props.grid_size - 2;
         return (
@@ -310,23 +333,31 @@ class Cell extends React.Component {
                     background: this.background(),
                     position: 'static',
                     textAlign: 'center',
-                    fontSize: ''+(cell_size*.8)+'px'
+                    fontSize: ''+(cell_size*.7)+'px',
+                    color: (this.props.val==this.props.val.toUpperCase() ? 'black' : 'grey')
                 }}
                 onMouseOver={() => this.props.onhover(this.props.x, this.props.y)}
                 onMouseOut={() => this.props.onMouseOut()}
+                onClick={() => this.onClick()}
                 onContextMenu={(e) => this.props.onrightclick(e, this.props.x, this.props.y)}
             >
-                {this.props.val == '*' ? ' ' : this.props.val}
+                {this.props.val == '*' ? ' ' : this.props.val.toUpperCase()}
             </div>
         )
     }
+    onClick() {
+        if(this.props.val != ' ') {
+            this.props.onCellClick(this.props.x, this.props.y)
+        }
+    }
     background() {
+        if(''+this.props.x+','+this.props.y == this.props.selected) {return '#e6e600'} // dark yellow
         if(this.props.toHover.indexOf(''+this.props.x+','+this.props.y) != -1) {
             if(this.props.val == ' ') {return '#595959'}
             return '#a6a6a6'
         }
         if(this.props.val == ' ') {return 'black'}
-        if(this.props.highlighted.indexOf(''+this.props.x+','+this.props.y) != -1) {return 'green'}
+        if(this.props.highlighted) {return '#66ffff'} // light blue
         return 'white'
     }
 }

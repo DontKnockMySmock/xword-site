@@ -51,11 +51,11 @@ def get_html(word):
             defin = get_definition(word)
             yield defin
             html += defin
-            yield '<h2>Wikipedia</h2>'
-            html += '<h2>Wikipedia</h2>'
-            for x in get_wikipedia(word):
-                yield x
-                html += x
+            #yield '<h2>Wikipedia</h2>'
+            #html += '<h2>Wikipedia</h2>'
+            #for x in get_wikipedia(word):
+            #    yield x
+            #    html += x
             word_object = Word(word=word, help_text=html)
             word_object.save()
         yield '</div>'

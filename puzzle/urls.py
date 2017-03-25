@@ -7,6 +7,8 @@ app_name = 'puzzle'
 urlpatterns = [
     # /puzzle/
     url(r'^$', views.index, name='index'),
+    # /puzzle/bootstrap
+    url(r'^bootstrap/$', views.bootstrap, name='bootstrap'),
     # /puzzle/builder/
     url(r'^builder/$', views.builder, name='builder'),
     # /puzzle/builder/random_template/

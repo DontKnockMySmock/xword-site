@@ -74,3 +74,7 @@ def publish(request):
 
 def stream_test(request):
     return StreamingHttpRequest
+
+
+def bootstrap(request):
+    return render(request, 'puzzle/bootstrap.html', {})
